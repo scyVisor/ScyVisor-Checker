@@ -18,7 +18,7 @@
 #include <intrin.h>
 
 bool IsHyperVEnabled() {
-    // Method 1: Check CPUID
+   
     int cpuInfo[4] = { 0 };
     __cpuid(cpuInfo, 1);
     bool hypervisorPresent = (cpuInfo[2] & (1 << 31)) != 0;
@@ -35,7 +35,7 @@ bool IsHyperVEnabled() {
         }
     }
 
-    // Method 2: Check registry
+   
     HKEY hKey;
     DWORD dwValue = 0;
     DWORD dwSize = sizeof(DWORD);
@@ -49,7 +49,7 @@ bool IsHyperVEnabled() {
         RegCloseKey(hKey);
     }
 
-    // Method 3: Check if Hyper-V services are running
+    
     SC_HANDLE schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
     if (schSCManager) {
         SC_HANDLE schService = OpenService(schSCManager, L"vmms", SERVICE_QUERY_STATUS);
@@ -80,18 +80,15 @@ bool IsHypervisorRunning() {
 bool IsHyperVRunning() {
     HRESULT hres;
 
-    // Initialize COM
+    
     hres = CoInitializeEx(0, COINIT_MULTITHREADED);
     if (FAILED(hres)) return false;
-
-    // Initialize WMI
     IWbemLocator* pLoc = NULL;
     hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc);
     if (FAILED(hres)) {
         CoUninitialize();
         return false;
     }
-
     IWbemServices* pSvc = NULL;
     hres = pLoc->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, &pSvc);
     if (FAILED(hres)) {
@@ -99,8 +96,6 @@ bool IsHyperVRunning() {
         CoUninitialize();
         return false;
     }
-
-    // Set security levels on the proxy
     hres = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
     if (FAILED(hres)) {
         pSvc->Release();
@@ -108,8 +103,6 @@ bool IsHyperVRunning() {
         CoUninitialize();
         return false;
     }
-
-    // Use the IWbemServices pointer to make requests of WMI
     IEnumWbemClassObject* pEnumerator = NULL;
     hres = pSvc->ExecQuery(bstr_t("WQL"), bstr_t("SELECT * FROM Win32_ComputerSystem"), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
     if (FAILED(hres)) {
@@ -118,8 +111,6 @@ bool IsHyperVRunning() {
         CoUninitialize();
         return false;
     }
-
-    // Get the data from the query
     IWbemClassObject* pclsObj = NULL;
     ULONG uReturn = 0;
     bool isHyperVRunning = false;
@@ -139,7 +130,6 @@ bool IsHyperVRunning() {
         pclsObj->Release();
     }
 
-    // Cleanup
     pSvc->Release();
     pLoc->Release();
     pEnumerator->Release();

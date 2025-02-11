@@ -47,21 +47,15 @@ void VirtualizationStatus(std::ofstream& outFile) {
     bool isAMD = strcmp(vendor, "AuthenticAMD") == 0;
 
     if (isIntel) {
-        __cpuid(cpuInfo, 1);
-        bool vmx_supported = (cpuInfo[2] & (1 << 5)) != 0;
-        outFile << "VT-x Supported: " << (vmx_supported ? "Yes" : "No") << std::endl;
-
-        if (vmx_supported) {
-            unsigned long long feature_control = __readmsr(0x3A);
-            bool locked = (feature_control & 1) != 0;
-            bool enabled_outside_smx = (feature_control & (1 << 2)) != 0;
-            outFile << "VT-x Locked: " << (locked ? "Yes" : "No") << std::endl;
-            outFile << "VT-x Enabled Outside SMX: " << (enabled_outside_smx ? "Yes" : "No") << std::endl;
-
-            // Check if VMX is actually enabled
-            unsigned long long vmx_basic_msr = __readmsr(0x480);
-            bool vmx_enabled = (vmx_basic_msr & (1ULL << 55)) != 0;
-            outFile << "VT-x Enabled: " << (vmx_enabled ? "Yes" : "No") << std::endl;
+        bool getInfo = true;
+        bool vmx_enabled = false; //TODO: get the actual vmx_status to check if VT-x is enabled in BIOS
+        if (getInfo) {
+            if (IsHyperVEnabled) {
+                outFile << "VT-x Enabled: Yes" << std::endl;
+            }
+            else {
+                outFile << "VT-x Enabled: " << (vmx_enabled ? "Yes" : "No") << std::endl;
+            }
         }
     }
     else if (isAMD) {

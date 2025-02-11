@@ -1,9 +1,0 @@
-Windows Version: Earlier than Windows 10
-Hyper-V Enabled: No
-Secure Boot Disabled: Yes
-CPU Vendor: GenuineIntel
-NX Protection Disabled: No
-Core Isolation / HVCI Enabled: No
-BIOS Mode: UEFI
-VBS Enabled: No
-VT-x Enabled: No
